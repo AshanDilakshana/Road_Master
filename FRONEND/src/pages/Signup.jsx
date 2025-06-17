@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserIcon, LockIcon, MailIcon } from 'lucide-react';
+import axios from 'axios';
+import { UserIcon, LockIcon, MailIcon, ContactIcon } from 'lucide-react';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
+  const [name,setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -13,13 +15,20 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
     try {
-      await signup(email, password);
+      const response = await axios.post('http://localhost:8080/api/users/admins_create', {
+        name,
+        email,
+        password
+      });
+      if (response.status !== 200) 
       navigate('/user-dashboard');
+
     } catch (err) {
       setError('Failed to create an account');
     }
@@ -35,6 +44,17 @@ const Signup = () => {
             {error}
           </div>}
         <form onSubmit={handleSubmit}>
+            <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
+              Name
+            </label>
+            <div className="flex items-center border rounded-md">
+              <div className="px-3 py-2 bg-gray-100 border-r">
+                <ContactIcon size={20} className="text-gray-500" />
+              </div>
+              <input id="name" type="name" className="w-full px-3 py-2 outline-none" placeholder="Enter your name" value={name} onChange={e => setName(e.target.value)} required />
+            </div>
+          </div>
           <div className="mb-6">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
               Email
