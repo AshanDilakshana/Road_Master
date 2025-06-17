@@ -23,9 +23,9 @@ const Login = () => {
         
       await login(user.data);
       //console.log('Login successfulnnn:', user.data);
-      if (user.data.userType == 'subadmin') {
+      if (user.data.userType == 'SubAdmin') {
         navigate('/subadmin-dashboard');
-      } else if (user.data.userType == 'admin') {
+      } else if (user.data.userType == 'Admin') {
         navigate('/admin-dashboard');
       } else if (user.data.userType == 'user') {
         navigate('/user-dashboard');
