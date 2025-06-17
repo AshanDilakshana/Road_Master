@@ -10,17 +10,35 @@ const Login = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
- 
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const user = await Axisos.post('http://localhost:8080/api/users/logging', {
+        email,
+        password,
+      });
+      await login(user.data);
+      if (user.data == 'subadmin') {
+        navigate('/subadmin-dashboard');
+      } else if (user.data == 'admin') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/user-dashboard');
+      }
+    } catch (err) {
+      setError('Failed to login. Please check your credentials.');
+    }
+  };
 //fetch users in the data base
-useEffect(() => {
+{/*useEffect(() => {
   const fetchUsers = async () => {
-      const res = await fetch('http://localhost:5001/api/users');
+      const res = await fetch('http://localhost:8080/api/users/addmins');
       if (!res.ok) {
         throw new Error('Failed to fetch users');
       }
       const data = await res.json();
   };
-
   fetchUsers();
 }, []);
 
@@ -28,7 +46,7 @@ useEffect(() => {
     e.preventDefault();
     try {
       await login(email, password);
-      // Redirect based on user type
+
       if (email.includes ('subadmin')) {
         navigate('/subadmin-dashboard');
       } else if (email.includes ('admin')) {
@@ -39,7 +57,7 @@ useEffect(() => {
     } catch (err) {
       setError('Failed to login. Please check your credentials.');
     }
-  }; 
+  };  */}
 
   
 
