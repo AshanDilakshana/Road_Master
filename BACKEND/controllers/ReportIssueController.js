@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const ReportIssue = require('../models/ResportIssue');
+const ReportIssue = require('../models/ReportIssue');
 
 const getReportIssues = async (req, res) => {
     try{ 
@@ -16,7 +16,7 @@ const  createReportIssue = async (req, res) => {
         const newRoprtIssue = new ReportIssue(req.body);
         await newRoprtIssue.save();
         res.status(201)
-        .jason({message: 'Report issue created successfully', data: newRoprtIssue});
+        .json({message: 'Report issue created successfully', data: newRoprtIssue});
     }
     catch(err){
         res.status(500).json({message: 'Error creating report issue', error: err.message});
