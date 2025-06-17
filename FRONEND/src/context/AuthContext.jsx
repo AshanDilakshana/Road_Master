@@ -15,13 +15,8 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = async (email, password, userType) => {
-    // Mock authentication
-    // In a real app, you would make an API call to authenticate
-    const userData = {
-      email,
-      userType
-    };
+  const login = async (userData) => {
+    // Store the user data from API response
     localStorage.setItem('roadmaster_user', JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);

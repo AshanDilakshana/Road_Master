@@ -9,9 +9,16 @@ const ProtectedRoute = ({ children, userType }) => {
     return <Navigate to="/" />;
   }
 
+  // If no specific userType is required, allow access
+  if (!userType) {
+    return <>{children}</>;
+  }
+
   const allowedTypes = Array.isArray(userType) ? userType : [userType];
+  
+  // Check if user has the required userType
   if (user && !allowedTypes.includes(user.userType || '')) {
-    // Redirect based on user type
+    // Redirect based on user type to their appropriate dashboard
     if (user.userType === 'user') {
       return <Navigate to="/user-dashboard" />;
     } else if (user.userType === 'admin') {
