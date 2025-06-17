@@ -10,23 +10,38 @@ const Login = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+ 
+//fetch users in the data base
+useEffect(() => {
+  const fetchUsers = async () => {
+      const res = await fetch('http://localhost:5001/api/users');
+      if (!res.ok) {
+        throw new Error('Failed to fetch users');
+      }
+      const data = await res.json();
+  };
+
+  fetchUsers();
+}, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(email, password, userType);
+      await login(email, password);
       // Redirect based on user type
-      if (userType === 'user') {
-        navigate('/user-dashboard');
-      } else if (userType === 'admin') {
+      if (email.includes ('subadmin')) {
+        navigate('/subadmin-dashboard');
+      } else if (email.includes ('admin')) {
         navigate('/admin-dashboard');
       } else {
-        navigate('/subadmin-dashboard');
+        navigate('/user-dashboard');
       }
     } catch (err) {
       setError('Failed to login. Please check your credentials.');
     }
-  };
+  }; 
+
+  
 
   return <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
@@ -59,16 +74,6 @@ const Login = () => {
               </div>
               <input id="password" type="password" className="w-full px-3 py-2 outline-none" placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required />
             </div>
-          </div>
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="userType">
-              Login As
-            </label>
-            <select id="userType" className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" value={userType} onChange={e => setUserType(e.target.value)}>
-              <option value="user">User</option>
-              <option value="admin">Main Admin</option>
-              <option value="subadmin">Province Admin</option>
-            </select>
           </div>
           <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors">
             Login
