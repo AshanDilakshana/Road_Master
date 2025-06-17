@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { UserIcon, LockIcon } from 'lucide-react';
+import Axiso from 'axios'; 
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -13,17 +14,20 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const user = await Axisos.post('http://localhost:8080/api/users/logging', {
+      const user = await Axiso.post('http://localhost:8080/api/users/logging', {
         email,
         password,
-      });
+      }); alert(user.data.message);
+        
       await login(user.data);
-      if (user.data == 'subadmin') {
+      //console.log('Login successfulnnn:', user.data);
+      if (user.data.userType == 'subadmin') {
         navigate('/subadmin-dashboard');
-      } else if (user.data == 'admin') {
+      } else if (user.data.userType == 'admin') {
         navigate('/admin-dashboard');
-      } else {
+      } else if (user.data.userType == 'user') {
         navigate('/user-dashboard');
       }
     } catch (err) {

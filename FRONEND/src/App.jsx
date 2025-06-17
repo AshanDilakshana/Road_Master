@@ -27,10 +27,15 @@ export function App() {
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/user-dashboard" element={<UserDashboard />} />
+
+
+
+
               <Route path="/user-dashboard" element={<ProtectedRoute userType="user">
                     <UserDashboard />
                   </ProtectedRoute>} />
-              <Route path="/admin-dashboard" element={<ProtectedRoute userType="admin">
+              <Route path="/admin-dashboard" element={<ProtectedRoute userType="Admin">
                     <AdminDashboard />
                   </ProtectedRoute>} />
               <Route path="/subadmin-dashboard" element={<ProtectedRoute userType="subadmin">
