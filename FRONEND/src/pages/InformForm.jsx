@@ -35,6 +35,7 @@ const InformForm = () => {
     contactNumber: '',
     additionalMessage: ''
   });
+  
   const [images, setImages] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
 
@@ -73,6 +74,7 @@ const InformForm = () => {
       location: position,
       images
     });
+
     // Navigate back to dashboard
     alert('Thank you for your report. It has been submitted successfully.');
     navigate('/user-dashboard');
