@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const userRoutes = require('./routes/usersRoutes');
+const reportIssueRoutes = require('./routes/ReportIssueRouter');
 
 dotenv.config()
 
@@ -11,6 +12,7 @@ app.use(cors());
 app.use(express.json()); //request body parsing
 
 app.use('/api/users', userRoutes);
+app.use('/api/reportIssues', reportIssueRoutes);
 
 
 
