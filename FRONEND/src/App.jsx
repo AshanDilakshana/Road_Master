@@ -14,10 +14,15 @@ import { AuthProvider } from './context/AuthContext';
 import { MessageProvider } from './context/MessageContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
+
+
+
+
 export function App() {
   return <AuthProvider>
       <MessageProvider>
         <Router>
+
           <div className="min-h-screen bg-gray-50">
             <Routes>
               <Route path="/" element={<Login />} />
