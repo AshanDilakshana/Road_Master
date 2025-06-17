@@ -4,7 +4,7 @@ const { getUsers, createUser } = require('../controllers/usersController');
 
 // Define routes for user operations
 
-router.get('/', getUsers); 
-router.post('/', createUser);
+router.get('/admin', getUsers); 
+router.post('/admin_create', createUser);
 
 module.exports = router;
