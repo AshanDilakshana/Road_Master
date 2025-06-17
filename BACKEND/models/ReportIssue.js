@@ -32,7 +32,7 @@ const reportIssueSchema = new mongoose.Schema({
     },
 
     contactNumber: {
-        tyep: String,
+        type: String,
         required: true
     },
 
