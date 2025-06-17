@@ -16,19 +16,19 @@ const logging = async (req, res) => {
         if (user.password !== password) {
             return res.status(401).json({ message: 'Invalid password' });
         }
-console.log('User logged in successfully:', user);
-        if (user.email.includes('admin')) {
+
+        if (user.email.includes('SubAdmin')) {
             return res.json({ message: 'Subadmin logged in successfully' },user);
         }
-        else if (user.email.includes('subadmin')) {
+        else if (user.email.includes('Admin')) {
             return res.json({ message: 'Admin logged in successfully' },user);
         }
         else {
-            return res.json({ message: 'User logged in successfully' },user);
+            return res.json({ message: 'User logged in successfully',user: "user"  });
         }
     } catch (error) {
         console.error('Error during login:', error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: 'Internal server error'});
     }
 }
 module.exports = {logging};
