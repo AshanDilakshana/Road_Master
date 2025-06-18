@@ -7,7 +7,7 @@ import Axiso from 'axios';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState('user');
+  //const [userType, setUserType] = useState('user');
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
