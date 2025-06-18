@@ -55,7 +55,12 @@ const reportIssueSchema = new mongoose.Schema({
     additionalMessage:{
         type: String,
         required: false
-    }
+    },
+
+    userName:{
+        type: String,
+        required: true  
+    },
 
 }) ;
 module.exports = mongoose.model('ReportIssue', reportIssueSchema);
