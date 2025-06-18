@@ -9,6 +9,7 @@ const logging = async (req, res) => {
 
     try {
         // Check if user exists
+        
         const user = await loggingx.findOne({email});
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -18,13 +19,14 @@ const logging = async (req, res) => {
         }
 
         if (user.email.includes('SubAdmin')) {
-            return res.json({ message: 'Subadmin logged in successfully' ,userType: "SubAdmin"},user);
+            return res.json({ message: 'Subadmin logged in successfully' ,userType: "SubAdmin",email:email},user);
         }
         else if (user.email.includes('Admin')) {
-            return res.json({ message: 'Admin logged in successfully' ,userType: "Admin"},user);
+            return res.json({ message: 'Admin logged in successfully' ,userType: "Admin",email:email},user);
         }
         else {
-            return res.json({ message: 'User logged in successfully',userType: "user"},user);
+   
+            return res.json({ message: 'User logged in successfully',userType: "user" ,email:email,name:user.name},user);
         }
     } catch (error) {
         console.error('Error during login:', error);
