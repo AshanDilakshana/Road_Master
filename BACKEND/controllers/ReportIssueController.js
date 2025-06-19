@@ -13,6 +13,23 @@ const getAllReportIssues = async (req, res) => {
     }
 };
 
+//get spesipic user datails
+const getReportIssueByEmail = async (req, res) => {
+    try{
+        if (!req.params.email) {
+            return res.status(400)
+            .json({message: 'Email parameter is required'});}
+            
+        const reportIssue = await ReportIssue.findOne({ email: req.params.email });
+        res.status(200)
+        .json({message: 'Report issue fetched successfully', data: reportIssue});
+    }catch (error) {
+        res.status(500)
+        .json({message: 'Error fetching report issue', error: error.message});
+    }
+};
+
+
 const  createReportIssue = async (req, res) => {
     try{
         const newRoprtIssue = new ReportIssue(req.body);
@@ -59,4 +76,4 @@ const updateReportIssue = async (req, res) => {
     }   
 };
 
-module.exports = {getAllReportIssues, createReportIssue, dleteReportIssue, updateReportIssue};
+module.exports = {getAllReportIssues,getReportIssueByEmail ,createReportIssue, dleteReportIssue, updateReportIssue};
