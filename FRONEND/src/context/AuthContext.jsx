@@ -4,6 +4,7 @@ const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [name, setName] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -20,14 +21,17 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('roadmaster_user', JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);
+     
   };
+ 
 
   const signup = async (email, password) => {
     // Mock signup
     // In a real app, you would make an API call to register the user
     const userData = {
       email,
-      userType: 'user'
+      userType: 'user',
+      
     };
     localStorage.setItem('roadmaster_user', JSON.stringify(userData));
     setUser(userData);
@@ -42,6 +46,7 @@ export const AuthProvider = ({ children }) => {
 
   return <AuthContext.Provider value={{
     user,
+    name,
     login,
     signup,
     logout,

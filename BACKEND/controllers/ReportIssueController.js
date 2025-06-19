@@ -16,11 +16,11 @@ const getAllReportIssues = async (req, res) => {
 //get spesipic user datails
 const getReportIssueByEmail = async (req, res) => {
     try{
-        if (!req.params.email) {
+        if (!req.query.email) {
             return res.status(400)
             .json({message: 'Email parameter is required'});}
             
-        const reportIssue = await ReportIssue.findOne({ email: req.params.email });
+        const reportIssue = await ReportIssue.find({ emailAddress: req.query.email });
         res.status(200)
         .json({message: 'Report issue fetched successfully', data: reportIssue});
     }catch (error) {
@@ -46,11 +46,11 @@ const  createReportIssue = async (req, res) => {
 const dleteReportIssue = async(req,res)=>{
     try{
         const {id}= req.params;
-        const dleteReportIssue =  await ReportIssue.findbyIdAndDelete(id);
+        const dleteReportIssue =  await ReportIssue.findByIdAndDelete(id);
         if(!dleteReportIssue){
             return res.status(404)
             .json({message: 'Report issue not found'});
-        }
+        }delete
         res.status(200)
         .json({message: 'Report issue deleted successfully'});
        }
