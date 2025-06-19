@@ -1,11 +1,32 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, FilterIcon } from 'lucide-react';
+import axios from 'axios';
 
 const InformationTab = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
+  //const [reports, setReports] = useState([]);
 
+{/* 
+  useEffect(() => {() => {
+    const fetchReports = async () => {
+    try {
+    const response = await axios.get('http://localhost:8080/api/reportIssues/GetAllreport');{
+      if (response.status === 200) {
+        // Assuming response.data contains the reports
+        setReports(response.data);
+      } else {
+        console.error('Failed to fetch reports');
+      }
+    };
+  }catch (error) {
+    console.error('Error fetching reports:', error);}
+    
+    fetchReports();
+}
+}}, []);*/}
+  
   // Mock data for reports
   const reports = [{
     id: 1,
@@ -14,35 +35,9 @@ const InformationTab = () => {
     town: 'Nugegoda',
     date: '2023-06-15',
     status: 'pending'
-  }, {
-    id: 2,
-    province: 'Western',
-    district: 'Gampaha',
-    town: 'Ja-Ela',
-    date: '2023-06-14',
-    status: 'pending'
-  }, {
-    id: 3,
-    province: 'Southern',
-    district: 'Galle',
-    town: 'Hikkaduwa',
-    date: '2023-06-13',
-    status: 'approved'
-  }, {
-    id: 4,
-    province: 'Sabaragamuwa',
-    district: 'Ratnapura',
-    town: 'Eheliyagoda',
-    date: '2023-06-12',
-    status: 'done'
-  }, {
-    id: 5,
-    province: 'Western',
-    district: 'Colombo',
-    town: 'Avissawella',
-    date: '2023-06-11',
-    status: 'pending'
   }];
+
+
 
   const filteredReports = filter === 'all' ? reports : reports.filter(report => report.status === filter);
 

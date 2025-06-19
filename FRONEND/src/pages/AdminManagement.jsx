@@ -1,49 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, PlusIcon, EditIcon, TrashIcon } from 'lucide-react';
+import Axios from 'axios';
+
+
 
 const AdminManagement = () => {
   const navigate = useNavigate();
   const [subAdmins, setSubAdmins] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState(null);
+  const [provinceStats, setProvinceStats] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    region: '',
+    province: '',
     password: '',
     confirmPassword: ''
   });
 
-  useEffect(() => {
-    // Load subadmins from localStorage or use defaults
-    const storedAdmins = localStorage.getItem('roadmaster_subadmins');
-    if (storedAdmins) {
-      setSubAdmins(JSON.parse(storedAdmins));
-    } else {
-      const defaultAdmins = [{
-        id: '1',
-        name: 'John Smith',
-        email: 'subadmin1@example.com',
-        region: 'Western Province',
-        active: true
-      }, {
-        id: '2',
-        name: 'Mary Johnson',
-        email: 'subadmin2@example.com',
-        region: 'Southern Province',
-        active: true
-      }, {
-        id: '3',
-        name: 'Robert Davis',
-        email: 'subadmin3@example.com',
-        region: 'Central Province',
-        active: false
-      }];
-      setSubAdmins(defaultAdmins);
-      localStorage.setItem('roadmaster_subadmins', JSON.stringify(defaultAdmins));
+useEffect(() => {
+  const fetchAdmins = async () => {
+    try {
+      const response = await Axios.get('http://localhost:8080/api/users/admins');
+      const allUsers = response.data;
+
+      const filteredAdmins = allUsers.filter(user =>
+        user.email.includes('@Admin') || user.email.includes('@SubAdmin')
+      );
+
+      setSubAdmins(filteredAdmins);
+    } catch (error) {
+      console.error('Error fetching province stats:', error);
+      alert('Failed to fetch province stats. Please try again later.');
     }
-  }, []);
+  };
+  fetchAdmins();
+}, []);      
+
+
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -58,7 +54,7 @@ const AdminManagement = () => {
     setFormData({
       name: '',
       email: '',
-      region: '',
+      province: '',
       password: '',
       confirmPassword: ''
     });
@@ -70,47 +66,55 @@ const AdminManagement = () => {
     setFormData({
       name: admin.name,
       email: admin.email,
-      region: admin.region,
-      password: '',
-      confirmPassword: ''
+      province: admin.province,
+      password: admin.password ,
+      confirmPassword: admin.password 
     });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
+ try {
     if (currentAdmin) {
-      // Edit existing admin
-      const updated = subAdmins.map(admin => admin.id === currentAdmin.id ? {
-        ...admin,
+      // UPDATE
+      const response = await Axios.put(`http://localhost:8080/api/users/admins_update/${currentAdmin._id}`, {
         name: formData.name,
         email: formData.email,
-        region: formData.region
-      } : admin);
-      setSubAdmins(updated);
-      localStorage.setItem('roadmaster_subadmins', JSON.stringify(updated));
+        province: formData.province,
+        password: formData.password
+      });
+      alert('Admin updated!');
     } else {
-      // Add new admin
-      const newAdmin = {
-        id: Date.now().toString(),
+      // CREATE
+      const response = await Axios.post(`http://localhost:8080/api/users/admins_create`, {
         name: formData.name,
         email: formData.email,
-        region: formData.region,
-        active: true
-      };
-      const updated = [...subAdmins, newAdmin];
-      setSubAdmins(updated);
-      localStorage.setItem('roadmaster_subadmins', JSON.stringify(updated));
+        province: formData.province,
+        password: formData.password
+      });
+      alert('Admin created!');
     }
+
+    // Refresh list
+    const res = await Axios.get('http://localhost:8080/api/users/admins');
+    const filteredAdmins = res.data.filter(user =>
+      user.email.includes('@Admin') || user.email.includes('@SubAdmin')
+    );
+    setSubAdmins(filteredAdmins);
     setIsModalOpen(false);
+  } catch (error) {
+    console.error('Error saving admin:', error);
+    alert('Failed to save admin.');
+  }
   };
 
-  const toggleAdminStatus = (id) => {
-    const updated = subAdmins.map(admin => admin.id === id ? {
+  const toggleAdminStatus = (_id) => {
+    const updated = subAdmins.map(admin => admin._id === _id ? {
       ...admin,
       active: !admin.active
     } : admin);
@@ -118,11 +122,18 @@ const AdminManagement = () => {
     localStorage.setItem('roadmaster_subadmins', JSON.stringify(updated));
   };
 
-  const deleteAdmin = (id) => {
+  const deleteAdmin = async(_id) => {
     if (confirm('Are you sure you want to delete this sub-admin?')) {
-      const updated = subAdmins.filter(admin => admin.id !== id);
-      setSubAdmins(updated);
-      localStorage.setItem('roadmaster_subadmins', JSON.stringify(updated));
+      try{
+       await Axios.delete(`http://localhost:8080/api/users/admins_delete/${_id}`);
+
+        setSubAdmins(subAdmins.filter(admin => admin._id !== _id));
+        alert('Sub-admin deleted successfully!');
+      }
+      catch (error) {
+        console.error('Error deleting sub-admin:', error);
+        alert('Failed to delete sub-admin.');
+      }
     }
   };
 
@@ -155,7 +166,7 @@ const AdminManagement = () => {
                     Email
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Region
+                    province
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -166,7 +177,8 @@ const AdminManagement = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {subAdmins.map(admin => <tr key={admin.id}>
+
+                {subAdmins.map(admin => <tr key={admin._id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
                         {admin.name}
@@ -190,10 +202,10 @@ const AdminManagement = () => {
                         <button onClick={() => openEditModal(admin)} className="text-blue-600 hover:text-blue-900">
                           <EditIcon size={18} />
                         </button>
-                        <button onClick={() => toggleAdminStatus(admin.id)} className={`${admin.active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}>
+                        <button onClick={() => toggleAdminStatus(admin._id)} className={`${admin.active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}>
                           {admin.active ? 'Deactivate' : 'Activate'}
                         </button>
-                        <button onClick={() => deleteAdmin(admin.id)} className="text-red-600 hover:text-red-900">
+                        <button onClick={() => deleteAdmin(admin._id)} className="text-red-600 hover:text-red-900">
                           <TrashIcon size={18} />
                         </button>
                       </div>
@@ -228,23 +240,16 @@ const AdminManagement = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Region
                   </label>
-                  <select name="region" value={formData.region} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
-                    <option value="">Select Region</option>
+                  <select name="province" value={formData.province} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                    <option value="">Select province</option>
                     <option value="Western Province">Western Province</option>
                     <option value="Central Province">Central Province</option>
                     <option value="Southern Province">Southern Province</option>
                     <option value="Northern Province">Northern Province</option>
                     <option value="Eastern Province">Eastern Province</option>
-                    <option value="North Western Province">
-                      North Western Province
-                    </option>
-                    <option value="North Central Province">
-                      North Central Province
-                    </option>
+                    <option value="North Western Province"> North Western Province </option>
+                    <option value="North Central Province">North Central Province</option>
                     <option value="Uva Province">Uva Province</option>
-                    <option value="Sabaragamuwa Province">
-                      Sabaragamuwa Province
-                    </option>
                   </select>
                 </div>
                 <div>
@@ -275,3 +280,111 @@ const AdminManagement = () => {
 };
 
 export default AdminManagement; 
+
+
+{/* 
+
+  import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeftIcon, FilterIcon } from 'lucide-react';
+import axios from 'axios';
+
+const InformationTab = () => {
+  const navigate = useNavigate();
+  const [filter, setFilter] = useState('all');
+  const [reports, setReports] = useState([]);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/reportIssues/GetAllreport');
+        if (response.data) {
+          setReports(response.data.data);
+          console.log('Fetched reports:', response.data.data);
+        } else {
+          console.error('Empty response');
+        }
+      } catch (error) {
+        console.error('Error fetching reports:', error);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  const filteredReports = filter === 'all'
+    ? reports
+    : reports.filter(report => report.status === filter);
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center mb-8">
+          <button onClick={() => navigate(-1)} className="mr-4 p-2 rounded-full bg-white shadow-md hover:bg-gray-100">
+            <ArrowLeftIcon size={20} />
+          </button>
+          <h1 className="text-2xl font-bold text-gray-800">Information Reports</h1>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">Road Issue Reports</h2>
+            <div className="flex items-center">
+              <FilterIcon size={18} className="mr-2 text-gray-600" />
+              <select
+                value={filter}
+                onChange={e => setFilter(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredReports.map(report => (
+              <div
+                key={report._id}
+                onClick={() => navigate(`/inquiry-details/${report._id}`)}
+                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-semibold text-lg">
+                    {report.province} / {report.district}
+                  </h3>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    report.status === 'pending'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : report.status === 'approved'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {report.status?.charAt(0).toUpperCase() + report.status?.slice(1)}
+                  </span>
+                </div>
+                <p className="text-gray-600 mb-2">Town: {report.nearbyTown}</p>
+                <p className="text-gray-500 text-sm">
+                  Reported on: {new Date(report.timeAndDate).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {filteredReports.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-gray-500">
+                No reports found with the selected filter.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InformationTab;
+  
+  */}
