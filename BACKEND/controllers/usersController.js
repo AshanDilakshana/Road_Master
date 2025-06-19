@@ -21,12 +21,40 @@ const createUser = async (req, res) => {
 };
     };
 
+    
+const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedUser = await user.findByIdAndDelete(id);
+        console.log("Deleting admin with ID:", _id);
+        if (!deletedUser) {
+            return res.status(404)
+            .json({message: 'User not found'});
+        }
+        res.status(200)
+        .json({message: 'User deleted successfully'});
+    } catch (error) {
+        res.status(500).json({message: 'Error deleting user', error: error.message});
+    }
+    
 
+};
 
-
+const updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedUser = await user.findByIdAndUpdate(id, req.body, { new: true });
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ message: 'User updated successfully', user: updatedUser });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating user', error: error.message });
+    }
+};
 
 
 
     
         
-module.exports = {getUsers,createUser};
+module.exports = {getUsers,createUser, deleteUser,updateUser};
