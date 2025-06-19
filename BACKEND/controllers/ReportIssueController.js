@@ -1,13 +1,15 @@
 const mongoose = require('mongoose');
 const ReportIssue = require('../models/ReportIssue');
 
-const getReportIssues = async (req, res) => {
+const getAllReportIssues = async (req, res) => {
     try{ 
-    const ReportIssue = await ReportIssue.find();
-    res.status(200);
+    const reportIssues = await ReportIssue.find();
+    res.status(200)
+    .json({message: 'Report issues fetched successfully', data: reportIssues});
     }
     catch (error) {
-        res.status(500).json({message: 'Error fetching report issues', error: error.message});
+        res.status(500)
+        .json({message: 'Error fetching report issues', error: error.message});
     }
 };
 
@@ -57,4 +59,4 @@ const updateReportIssue = async (req, res) => {
     }   
 };
 
-module.exports = {getReportIssues, createReportIssue, dleteReportIssue, updateReportIssue};
+module.exports = {getAllReportIssues, createReportIssue, dleteReportIssue, updateReportIssue};
