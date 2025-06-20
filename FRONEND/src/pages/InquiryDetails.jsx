@@ -28,7 +28,7 @@ const InquiryDetails = () => {
         // Fetch report details
         const reportResponse = await axios.get(`http://localhost:8080/api/reportIssues/GetreportById/${id}`);
           console.log(' Report response:', reportResponse);
-          
+
         if (reportResponse.status === 200 && reportResponse.data.data) {
           setReport(reportResponse.data.data);
           setStatus(reportResponse.data.data.status || 'pending');
@@ -58,7 +58,6 @@ const InquiryDetails = () => {
     };
     fetchData();
   }, [id]);
-
   const relevantSubAdmins = report ? allSubAdmins.filter(admin => admin.province === report.province) : [];
 
   const handleStatusChange = async (newStatus) => {
