@@ -65,7 +65,9 @@ const reportIssueSchema = new mongoose.Schema({
     status:{
         type: String,
         default: 'Pending'
+    },
+    ProvinceAdmin:{
+        type: String,
     }
-
 }) ;
 module.exports = mongoose.model('ReportIssue', reportIssueSchema);
