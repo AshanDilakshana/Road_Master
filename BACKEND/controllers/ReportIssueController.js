@@ -30,6 +30,7 @@ const getReportIssueByEmail = async (req, res) => {
 };
 
 
+
 const  createReportIssue = async (req, res) => {
     try{
         const newRoprtIssue = new ReportIssue(req.body);
@@ -60,6 +61,19 @@ const dleteReportIssue = async(req,res)=>{
        }
 };
 
+// ReportIssueController.js
+const getReportIssueById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const reportIssue = await ReportIssue.findById(id);
+    if (!reportIssue) {
+      return res.status(404).json({ message: 'Report issue not found' });
+    }
+    res.status(200).json({ message: 'Report issue fetched successfully', data: reportIssue });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching report issue', error: error.message });
+  }
+};
 
 const updateReportIssue = async (req, res) => {
     try{
@@ -76,4 +90,6 @@ const updateReportIssue = async (req, res) => {
     }   
 };
 
-module.exports = {getAllReportIssues,getReportIssueByEmail ,createReportIssue, dleteReportIssue, updateReportIssue};
+
+module.exports = { getAllReportIssues, getReportIssueByEmail, getReportIssueById, createReportIssue, dleteReportIssue, updateReportIssue };
+
