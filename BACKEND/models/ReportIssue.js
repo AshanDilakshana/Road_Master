@@ -62,6 +62,10 @@ const reportIssueSchema = new mongoose.Schema({
         type: String,
         required: true  
     },
+    status:{
+        type: String,
+        default: 'Pending'
+    }
 
 }) ;
 module.exports = mongoose.model('ReportIssue', reportIssueSchema);
