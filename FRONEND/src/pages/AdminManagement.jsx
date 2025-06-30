@@ -10,7 +10,7 @@ const AdminManagement = () => {
   const [subAdmins, setSubAdmins] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState(null);
-  const [provinceStats, setProvinceStats] = useState([]);
+ // const [provinceStats, setProvinceStats] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
