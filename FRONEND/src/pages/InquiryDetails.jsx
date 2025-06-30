@@ -309,9 +309,7 @@ const InquiryDetails = () => {
                   <button
                     onClick={() => handleStatusChange('done')}
                     className={`px-4 py-2 rounded-md ${
-                      status === 'done' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                    }`}
-                  >
+                      status === 'done' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}>
                     Done
                   </button>
                 </div>
@@ -373,6 +371,7 @@ const InquiryDetails = () => {
           </div>
         </div>
       )}
+      
       {/* Report Preview Modal */}
       {showReportModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
