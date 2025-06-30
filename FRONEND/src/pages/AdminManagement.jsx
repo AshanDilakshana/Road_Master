@@ -10,7 +10,7 @@ const AdminManagement = () => {
   const [subAdmins, setSubAdmins] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState(null);
- // const [provinceStats, setProvinceStats] = useState([]);
+  const [provinceStats, setProvinceStats] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -69,7 +69,8 @@ useEffect(() => {
       email: admin.email,
       province: admin.province,
       password: admin.password ,
-      confirmPassword: admin.password 
+      confirmPassword: admin.password ,
+      status:admin.status
     });
     setIsModalOpen(true);
   };
@@ -87,7 +88,8 @@ useEffect(() => {
         name: formData.name,
         email: formData.email,
         province: formData.province,
-        password: formData.password
+        password: formData.password,
+        status:formData.status
       });
       alert('Admin updated!');
     } else {
@@ -96,7 +98,8 @@ useEffect(() => {
         name: formData.name,
         email: formData.email,
         province: formData.province,
-        password: formData.password
+        password: formData.password,
+        
       });
       alert('Admin created!');
     }
@@ -114,14 +117,32 @@ useEffect(() => {
   }
   };
 
-  const toggleAdminStatus = (_id) => {
-    const updated = subAdmins.map(admin => admin._id === _id ? {
-      ...admin,
-      active: !admin.active
-    } : admin);
-    setSubAdmins(updated);
-    localStorage.setItem('roadmaster_subadmins', JSON.stringify(updated));
-  };
+const toggleAdminStatus = async (_id) => {
+  try {
+    // Find current admin from state
+    const targetAdmin = subAdmins.find(admin => admin._id === _id);
+    const updatedStatus = targetAdmin.status === 'active' ? 'deactivated' : 'active';
+
+    // Send update to backend
+    await Axios.put(`http://localhost:8080/api/users/admins_update/${_id}`, {
+      status: updatedStatus
+    });
+
+    // Refresh updated list from backend
+    const response = await Axios.get('http://localhost:8080/api/users/admins');
+    const filteredAdmins = response.data.filter(user =>
+      user.email.includes('@Admin') || user.email.includes('@SubAdmin')
+    );
+    setSubAdmins(filteredAdmins);
+
+    alert(`Admin ${updatedStatus === 'active' ? 'activated' : 'deactivated'} successfully`);
+  } catch (error) {
+    console.error("Error updating status:", error);
+    alert("Failed to update admin status.");
+  }
+};
+
+
 
   const deleteAdmin = async(_id) => {
     if (confirm('Are you sure you want to delete this sub-admin?')) {
@@ -194,8 +215,9 @@ useEffect(() => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${admin.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {admin.active ? 'Active' : 'Inactive'}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        admin.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {admin.status === 'active' ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -203,8 +225,9 @@ useEffect(() => {
                         <button onClick={() => openEditModal(admin)} className="text-blue-600 hover:text-blue-900">
                           <EditIcon size={18} />
                         </button>
-                        <button onClick={() => toggleAdminStatus(admin._id)} className={`${admin.active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}>
-                          {admin.active ? 'Deactivate' : 'Activate'}
+                        <button onClick={() => toggleAdminStatus(admin._id)} className={`${admin.status === 'active' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}>
+                          {admin.status === 'active' ? 'Deactivate' : 'Activate'}
+
                         </button>
                         <button onClick={() => deleteAdmin(admin._id)} className="text-red-600 hover:text-red-900">
                           <TrashIcon size={18} />
