@@ -13,7 +13,7 @@ const Messages = () => {
   const handleBack = () => {
     if (user?.userType === 'user') {
       navigate('/user-dashboard');
-    } else if (user?.userType === 'admin') {
+    } else if (user?.userType === 'Admin') {
       navigate('/admin-dashboard');
     } else {
       navigate('/subadmin-dashboard');
