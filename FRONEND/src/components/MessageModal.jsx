@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { XIcon } from 'lucide-react';
 import { useMessages } from '../context/MessageContext';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
 const MessageModal = ({ isOpen, onClose, recipientType }) => {
   const [subject, setSubject] = useState('');
@@ -12,43 +13,34 @@ const MessageModal = ({ isOpen, onClose, recipientType }) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    // In a real application, this would be fetched from the backend
-    const mockRecipients = [{
-      email: 'admin@example.com',
-      name: 'Main Admin',
-      userType: 'admin'
-    }, {
-      email: 'subadmin1@example.com',
-      name: 'Western Province Admin',
-      userType: 'subadmin'
-    }, {
-      email: 'subadmin2@example.com',
-      name: 'Southern Province Admin',
-      userType: 'subadmin'
-    }, {
-      email: 'user@example.com',
-      name: 'John User',
-      userType: 'user'
-    }];
-
-    if (recipientType) {
-      setRecipients(mockRecipients.filter(r => r.userType === recipientType));
-    } else {
-      setRecipients(mockRecipients);
-    }
-
-    // Set default recipient based on user type
-    if (user?.userType === 'user') {
-      const adminRecipient = mockRecipients.find(r => r.userType === 'admin');
-      if (adminRecipient) setSelectedRecipient(adminRecipient.email);
-    } else if (user?.userType === 'admin') {
-      const subadminRecipient = mockRecipients.find(r => r.userType === 'subadmin');
-      if (subadminRecipient) setSelectedRecipient(subadminRecipient.email);
-    } else if (user?.userType === 'subadmin') {
-      const adminRecipient = mockRecipients.find(r => r.userType === 'admin');
-      if (adminRecipient) setSelectedRecipient(adminRecipient.email);
-    }
-  }, [recipientType, user]);
+    // Fetch users from backend and filter for admins and subadmins
+    const fetchRecipients = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/users/admins');
+        if (Array.isArray(response.data)) {
+          // Filter for admins and subadmins by email pattern
+          const filtered = response.data.filter(r => r.email.includes('Admin'));
+          setRecipients(filtered);
+          // Set default recipient
+          if (user?.userType === 'user') {
+            const adminRecipient = filtered.find(r => r.email.includes('Admin') && !r.email.includes('SubAdmin'));
+            if (adminRecipient) setSelectedRecipient(adminRecipient.email);
+          } else if (user?.userType === 'admin') {
+            const subadminRecipient = filtered.find(r => r.email.includes('SubAdmin'));
+            if (subadminRecipient) setSelectedRecipient(subadminRecipient.email);
+          } else if (user?.userType === 'subadmin') {
+            const adminRecipient = filtered.find(r => r.email.includes('Admin') && !r.email.includes('SubAdmin'));
+            if (adminRecipient) setSelectedRecipient(adminRecipient.email);
+          }
+        } else {
+          setRecipients([]);
+        }
+      } catch (err) {
+        setRecipients([]);
+      }
+    };
+    fetchRecipients();
+  }, [user]);
 
   const handleSend = () => {
     if (!subject || !content || !selectedRecipient) {
