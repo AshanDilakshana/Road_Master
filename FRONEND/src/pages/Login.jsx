@@ -2,25 +2,47 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { UserIcon, LockIcon } from 'lucide-react';
+import Axiso from 'axios'; 
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState('user');
+  //const [userType, setUserType] = useState('user');
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
- 
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const user = await Axiso.post('http://localhost:8080/api/users/logging', {
+        email,
+        password,
+      }); alert(user.data.message);
+        
+      await login(user.data);
+      //console.log('Login successfulnnn:', user.data);
+      if (user.data.userType == 'SubAdmin') {
+        navigate('/subadmin-dashboard');
+      } else if (user.data.userType == 'Admin') {
+        navigate('/admin-dashboard');
+      } else if (user.data.userType == 'user') {
+        navigate('/user-dashboard');
+      }
+    } catch (err) {
+      setError('Failed to login. Please check your credentials.');
+    }
+  };
 //fetch users in the data base
-useEffect(() => {
+{/*useEffect(() => {
   const fetchUsers = async () => {
-      const res = await fetch('http://localhost:5001/api/users');
+      const res = await fetch('http://localhost:8080/api/users/addmins');
       if (!res.ok) {
         throw new Error('Failed to fetch users');
       }
       const data = await res.json();
   };
-
   fetchUsers();
 }, []);
 
@@ -28,7 +50,7 @@ useEffect(() => {
     e.preventDefault();
     try {
       await login(email, password);
-      // Redirect based on user type
+
       if (email.includes ('subadmin')) {
         navigate('/subadmin-dashboard');
       } else if (email.includes ('admin')) {
@@ -39,7 +61,7 @@ useEffect(() => {
     } catch (err) {
       setError('Failed to login. Please check your credentials.');
     }
-  }; 
+  };  */}
 
   
 

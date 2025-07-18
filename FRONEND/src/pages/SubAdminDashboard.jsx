@@ -1,16 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import MessageModal from '../components/MessageModal';
 import { useAuth } from '../context/AuthContext';
 import { useMessages } from '../context/MessageContext';
 import { AlertCircleIcon, CheckCircleIcon, MessageSquareIcon, ClipboardIcon } from 'lucide-react';
+import axios from 'axios';
 
 const SubAdminDashboard = () => {
   const { user } = useAuth();
   const { unreadCount } = useMessages();
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  const fetchReports = async () => {
+    if (!user?.email) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get('http://localhost:8080/api/reportIssues/GetreportByProvinceAdmin', {
+        params: { ProvinceAdmin: user.email }
+      });
+      if (response.status === 200 && Array.isArray(response.data.data)) {
+        setReports(response.data.data);
+      } else {
+        setReports([]);
+        setError('Failed to fetch reports');
+      }
+    } catch (err) {
+      setError('Failed to fetch reports');
+      setReports([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchAndPoll = () => {
+      fetchReports();
+      const interval = setInterval(fetchReports, 15000);
+      return () => clearInterval(interval);
+    };
+    if (user?.email) {
+      const cleanup = fetchAndPoll();
+      return cleanup;
+    }
+  }, [user?.email]);
+
+  // Calculate counts for Pending and Done
+  const pendingCount = reports.filter(r => (r.status || '').toLowerCase() === 'pending').length;
+  const doneCount = reports.filter(r => (r.status || '').toLowerCase() === 'done').length;
 
   return <div className="flex min-h-screen bg-gray-100">
       <Sidebar userType="subadmin" />
@@ -34,6 +76,7 @@ const SubAdminDashboard = () => {
         </header>
         <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+           
             {/* Informations Card */}
             <Link to="/information-tab" className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center text-center">
               <div className="bg-blue-100 p-4 rounded-full mb-4">
@@ -42,14 +85,16 @@ const SubAdminDashboard = () => {
               <h2 className="text-xl font-semibold mb-2">Informations</h2>
               <p className="text-gray-600">View all reports</p>
             </Link>
+
             {/* Pending Card */}
             <div className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center text-center">
               <div className="bg-yellow-100 p-4 rounded-full mb-4">
                 <AlertCircleIcon size={32} className="text-yellow-600" />
               </div>
               <h2 className="text-xl font-semibold mb-2">Pending</h2>
-              <p className="text-gray-600">6</p>
+              <p className="text-gray-600">{pendingCount}</p>
             </div>
+
             {/* Messages Card */}
             <div onClick={() => navigate('/messages')} className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center text-center cursor-pointer">
               <div className="bg-purple-100 p-4 rounded-full mb-4 relative">
@@ -61,84 +106,59 @@ const SubAdminDashboard = () => {
               <h2 className="text-xl font-semibold mb-2">Messages</h2>
               <p className="text-gray-600">{unreadCount} unread</p>
             </div>
+
             {/* Done Card */}
             <div className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center text-center">
               <div className="bg-green-100 p-4 rounded-full mb-4">
                 <CheckCircleIcon size={32} className="text-green-600" />
               </div>
               <h2 className="text-xl font-semibold mb-2">Done</h2>
-              <p className="text-gray-600">2</p>
+              <p className="text-gray-600">{doneCount}</p>
             </div>
           </div>
+
           {/* Recent Reports */}
           <div className="bg-white shadow-md rounded-lg overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-xl font-bold">Recent Reports</h2>
             </div>
             <div className="divide-y divide-gray-200">
-              <div className="p-6 hover:bg-gray-50">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">
-                      Eheliyagoda / Sabaragamuwa
-                    </h3>
-                    <p className="text-gray-600 mb-2">
-                      Pothole on main road near the market
-                    </p>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <span className="mr-4">Reported: June 12, 2023</span>
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
-                        Pending
-                      </span>
+              {loading ? (
+                <div className="p-6 text-center text-gray-500">Loading...</div>
+              ) : error ? (
+                <div className="p-6 text-center text-red-500">{error}</div>
+              ) : reports.length === 0 ? (
+                <div className="p-6 text-center text-gray-500">No reports assigned to you.</div>
+              ) : (
+                reports.slice(0, 3).map((report) => (
+                  <div key={report._id} className="p-6 hover:bg-gray-50">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold text-lg mb-1">
+                          {report.nearbyTown} / {report.province}
+                        </h3>
+                        <p className="text-gray-600 mb-2">
+                          {report.additionalMessage || 'No additional message provided.'}
+                        </p>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <span className="mr-4">Reported: {new Date(report.timeAndDate).toLocaleDateString()}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs ${
+                            report.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                            report.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                            report.status === 'Done' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-600'
+                          }`}>
+                            {report.status || 'Pending'}
+                          </span>
+                        </div>
+                      </div>
+                      <Link to={`/inquiry-details/${report._id}`} className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-md text-sm font-medium">
+                        View Details
+                      </Link>
                     </div>
                   </div>
-                  <Link to="/inquiry-details/1" className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-md text-sm font-medium">
-                    View Details
-                  </Link>
-                </div>
-              </div>
-              <div className="p-6 hover:bg-gray-50">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">
-                      Ratnapura / Sabaragamuwa
-                    </h3>
-                    <p className="text-gray-600 mb-2">
-                      Damaged guardrail on highway
-                    </p>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <span className="mr-4">Reported: June 10, 2023</span>
-                      <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
-                        Approved
-                      </span>
-                    </div>
-                  </div>
-                  <Link to="/inquiry-details/2" className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-md text-sm font-medium">
-                    View Details
-                  </Link>
-                </div>
-              </div>
-              <div className="p-6 hover:bg-gray-50">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">
-                      Balangoda / Sabaragamuwa
-                    </h3>
-                    <p className="text-gray-600 mb-2">
-                      Faded road markings near school zone
-                    </p>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <span className="mr-4">Reported: June 5, 2023</span>
-                      <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                        Done
-                      </span>
-                    </div>
-                  </div>
-                  <Link to="/inquiry-details/3" className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-md text-sm font-medium">
-                    View Details
-                  </Link>
-                </div>
-              </div>
+                ))
+              )}
             </div>
           </div>
         </main>

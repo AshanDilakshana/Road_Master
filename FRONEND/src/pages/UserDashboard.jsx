@@ -1,16 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import MessageModal from '../components/MessageModal';
 import { useAuth } from '../context/AuthContext';
 import { useMessages } from '../context/MessageContext';
 import { PlusIcon, AlertCircleIcon, MessageSquareIcon } from 'lucide-react';
+import Axios from 'axios';
+
 
 const UserDashboard = () => {
   const { user } = useAuth();
   const { unreadCount } = useMessages();
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [informs, setInforms] = useState([]);
   const navigate = useNavigate();
+
+  // Add a refresh function
+  const fetchInforms = async () => {
+    try {
+      const response = await Axios.get('http://localhost:8080/api/reportIssues/Getreport/', {
+        params: { email: user?.email }
+      });
+      setInforms(response.data.data);
+    } catch (error) {
+      console.error('Error fetching informs:', error);
+      alert('Failed to fetch your informs. Please try again later.');
+    }
+  };
+
+  useEffect(() => {
+    if (!user?.email) return;
+    fetchInforms();
+    const interval = setInterval(fetchInforms, 15000);
+    return () => clearInterval(interval);
+  }, [user?.email]);
+  
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this inform?')) {
+      try {
+        const response = await Axios.delete(`http://localhost:8080/api/reportIssues/reportIssues_delete/${id}`);
+        if (response.status === 200) {
+          setInforms(informs.filter(inform => inform._id !== id));
+          alert('Inform deleted successfully!');
+        }
+      } catch (error) {
+        console.error('Error deleting inform:', error);
+        alert('Failed to delete inform. Please try again.');
+      }
+    }
+  };
+
+  const handleEdit = (inform) => {
+    navigate('/inform-form', { state: { inform } });
+  };
 
   return <div className="flex min-h-screen bg-gray-100">
       <Sidebar userType="user" />
@@ -22,6 +65,9 @@ const UserDashboard = () => {
               <button onClick={() => setIsMessageModalOpen(true)} className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm">
                 <MessageSquareIcon size={16} className="mr-2" />
                 Create Message
+              </button>
+              <button onClick={fetchInforms} className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded text-sm border border-gray-300">
+                Refresh
               </button>
               <span className="text-gray-600">{user?.email}</span>
             </div>
@@ -43,7 +89,7 @@ const UserDashboard = () => {
                 <AlertCircleIcon size={32} className="text-green-600" />
               </div>
               <h2 className="text-xl font-semibold mb-2">My Informs</h2>
-              <p className="text-gray-600">2</p>
+              <p className="text-gray-600">{informs.length}</p>
             </div>
             {/* Messages Card */}
             <div onClick={() => navigate('/messages')} className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center text-center cursor-pointer">
@@ -57,56 +103,40 @@ const UserDashboard = () => {
               <p className="text-gray-600">{unreadCount} unread</p>
             </div>
           </div>
+          
           {/* Recent Informs Section */}
           <div className="mt-10">
             <h2 className="text-xl font-bold mb-4">Your Sent Information</h2>
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-lg font-semibold">
-                    Eheliyagoda / Sabaragamuwa
-                  </h3>
-                  <div className="flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-800">
-                      Edit
-                    </button>
-                    <button className="text-red-600 hover:text-red-800">
-                      Delete
-                    </button>
+            {informs.length === 0 ? (
+              <p className="text-gray-600">No informs submitted yet.</p>
+            ) : (
+              informs.map((inform) => (
+                <div key={inform._id} className="bg-white shadow-md rounded-lg overflow-hidden mb-4">
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="text-lg font-semibold">
+                        {inform.nearbyTown} / {inform.province}
+                      </h3>
+                      <div className="flex space-x-2">
+                        <button onClick={() => handleEdit(inform)} className="text-blue-600 hover:text-blue-800">
+                          Edit
+                        </button>
+                        <button onClick={() => handleDelete(inform._id)} className="text-red-600 hover:text-red-800">
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 mb-4">
+                      {inform.additionalMessage || 'No additional message provided'}
+                    </p>
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>Status: {inform.status ? inform.status.charAt(0).toUpperCase() + inform.status.slice(1) : 'Pending'}</span>
+                      <span>Submitted: {new Date(inform.timeAndDate).toLocaleDateString()}</span>
+                    </div>
                   </div>
                 </div>
-                <p className="text-gray-600 mb-4">
-                  Pothole on main road near the market
-                </p>
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>Status: Pending</span>
-                  <span>Submitted: 12 Jun 2023</span>
-                </div>
-              </div>
-              <div className="border-t border-gray-200"></div>
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-lg font-semibold">
-                    Avissawella / Western Province
-                  </h3>
-                  <div className="flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-800">
-                      Edit
-                    </button>
-                    <button className="text-red-600 hover:text-red-800">
-                      Delete
-                    </button>
-                  </div>
-                </div>
-                <p className="text-gray-600 mb-4">
-                  Damaged road signs near the school zone
-                </p>
-                <div className="flex justify-between text-sm text-gray-500">
-                  <span>Status: In Progress</span>
-                  <span>Submitted: 5 Jun 2023</span>
-                </div>
-              </div>
-            </div>
+              ))
+            )}
           </div>
         </main>
       </div>
@@ -114,4 +144,4 @@ const UserDashboard = () => {
     </div>;
 };
 
-export default UserDashboard; 
+export default UserDashboard;

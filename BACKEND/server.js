@@ -3,14 +3,18 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const userRoutes = require('./routes/usersRoutes');
+const reportIssueRoutes = require('./routes/ReportIssueRouter');
+const messageRoutes = require('./routes/MessageRouter');
 
 dotenv.config()
 
 const app = express();
 app.use(cors());
-app.use(express.json()); //request body parsing
+app.use(express.json({limit: '10mb' })); //request body parsing
 
 app.use('/api/users', userRoutes);
+app.use('/api/reportIssues', reportIssueRoutes);
+app.use('/api/messages', messageRoutes);
 
 
 
@@ -20,7 +24,8 @@ app.use('/api/users', userRoutes);
 
 
 
-const port = process.env. port||5000;
+
+const port = process.env.PORT || 8081;
 // mongodb connection create
 mongoose
      .connect(process.env.MONGO_URI, )

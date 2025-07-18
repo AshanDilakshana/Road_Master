@@ -4,36 +4,27 @@ const AuthContext = createContext(undefined);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [name, setName] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true); // 👈 new state
 
   useEffect(() => {
-    // Check if user is already logged in
     const storedUser = localStorage.getItem('roadmaster_user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
       setIsAuthenticated(true);
     }
+    setLoading(false); // ✅ Done checking localStorage
   }, []);
 
-  const login = async (email, password, userType) => {
-    // Mock authentication
-    // In a real app, you would make an API call to authenticate
-    const userData = {
-      email,
-      userType
-    };
+  const login = async (userData) => {
     localStorage.setItem('roadmaster_user', JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);
   };
 
   const signup = async (email, password) => {
-    // Mock signup
-    // In a real app, you would make an API call to register the user
-    const userData = {
-      email,
-      userType: 'user'
-    };
+    const userData = { email, userType: 'user' };
     localStorage.setItem('roadmaster_user', JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);
@@ -45,15 +36,13 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   };
 
-  return <AuthContext.Provider value={{
-    user,
-    login,
-    signup,
-    logout,
-    isAuthenticated
-  }}>
+  return (
+    <AuthContext.Provider value={{
+      user, name, login, signup, logout, isAuthenticated, loading
+    }}>
       {children}
-    </AuthContext.Provider>;
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
@@ -62,4 +51,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};

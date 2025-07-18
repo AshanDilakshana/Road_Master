@@ -10,6 +10,7 @@ import InformationTab from './pages/InformationTab';
 import InquiryDetails from './pages/InquiryDetails';
 import Messages from './pages/Messages';
 import AdminManagement from './pages/AdminManagement';
+import AdminUsers from './pages/AdminUsers';
 import { AuthProvider } from './context/AuthContext';
 import { MessageProvider } from './context/MessageContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -27,10 +28,13 @@ export function App() {
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+
+
+
               <Route path="/user-dashboard" element={<ProtectedRoute userType="user">
                     <UserDashboard />
                   </ProtectedRoute>} />
-              <Route path="/admin-dashboard" element={<ProtectedRoute userType="admin">
+              <Route path="/admin-dashboard" element={<ProtectedRoute userType="Admin">
                     <AdminDashboard />
                   </ProtectedRoute>} />
               <Route path="/subadmin-dashboard" element={<ProtectedRoute userType="subadmin">
@@ -50,6 +54,9 @@ export function App() {
                   </ProtectedRoute>} />
               <Route path="/admin-management" element={<ProtectedRoute userType="admin">
                     <AdminManagement />
+                  </ProtectedRoute>} />
+              <Route path="/admin-users" element={<ProtectedRoute userType="admin">
+                    <AdminUsers />
                   </ProtectedRoute>} />
             </Routes>
           </div>

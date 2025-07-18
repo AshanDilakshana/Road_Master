@@ -1,12 +1,13 @@
-import React, { useState, memo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { MapPinIcon, ImageIcon, ClockIcon, MailIcon, PhoneIcon, SendIcon, XIcon } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import Axios from 'axios';
 
-// Fix Leaflet icon issue
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
@@ -26,17 +27,32 @@ const LocationMarker = ({ position, setPosition }) => {
 const InformForm = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [position, setPosition] = useState([7.8731, 80.7718]); // Default to center of Sri Lanka
+  const location = useLocation();
+  const { inform } = location.state || {};
+
+  const [position, setPosition] = useState(inform ? [inform.location.lat, inform.location.lng] : [7.8731, 80.7718]);
   const [formData, setFormData] = useState({
-    province: '',
-    district: '',
-    nearbyTown: '',
-    damageLevel: 'low',
-    contactNumber: '',
-    additionalMessage: ''
+    province: inform?.province || '',
+    district: inform?.district || '',
+    nearbyTown: inform?.nearbyTown || '',
+    damageLevel: inform?.damageLevel || 'low',
+    contactNumber: inform?.contactNumber || '',
+    additionalMessage: inform?.additionalMessage || '',
+    images: inform?.image || []
   });
-  const [images, setImages] = useState([]);
-  const [previewUrls, setPreviewUrls] = useState([]);
+  
+  const [images, setImages] = useState(inform?.image || []);
+  const [previewUrls, setPreviewUrls] = useState(inform?.image || []);
+
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach(url => {
+        if (!url.startsWith('data:image')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [previewUrls]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,45 +62,88 @@ const InformForm = () => {
     });
   };
 
-  const handleImageChange = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
+  const handleImageChange = async (e) => {
+    if (e.target.files && e.target.files && e.target.files.length > 0) {
       const newImages = Array.from(e.target.files).slice(0, 5 - images.length);
-      setImages([...images, ...newImages]);
-      // Create preview URLs
+
       const newPreviewUrls = newImages.map(file => URL.createObjectURL(file));
-      setPreviewUrls([...previewUrls, ...newPreviewUrls]);
+      setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
+
+      const base64Promises = newImages.map(file => convertToBase64(file));
+      const base64Results = await Promise.all(base64Promises);
+
+      setImages(prev => [...prev, ...base64Results]);
+      setFormData(prev => ({ ...prev, images: [...prev.images, ...base64Results] }));
     }
   };
 
   const removeImage = (index) => {
-    // Revoke the URL to prevent memory leaks
-    URL.revokeObjectURL(previewUrls[index]);
-    setImages(images.filter((_, i) => i !== index));
-    setPreviewUrls(previewUrls.filter((_, i) => i !== index));
+    if (previewUrls[index] && !previewUrls[index].startsWith('data:image')) {
+      URL.revokeObjectURL(previewUrls[index]);
+    }
+    setImages(prevImages => prevImages.filter((_, i) => i !== index));
+    setPreviewUrls(prevUrls => prevUrls.filter((_, i) => i !== index));
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you would normally send the data to your backend
-    console.log({
-      ...formData,
-      email: user?.email,
-      date: new Date().toISOString(),
-      location: position,
-      images
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
     });
-    // Navigate back to dashboard
-    alert('Thank you for your report. It has been submitted successfully.');
-    navigate('/user-dashboard');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const requestData = {
+        province: formData.province,
+        district: formData.district,
+        nearbyTown: formData.nearbyTown,
+        damageLevel: formData.DamageLevel,
+        contactNumber: formData.contactNumber,
+        additionalMessage: formData.additionalMessage,
+        userName: user?.name,
+        emailAddress: user?.email,
+        timeAndDate: new Date().toISOString(),
+        location: {
+          lat: position[0],
+          lng: position[1]
+        },
+        image: formData.images
+      };
+
+      let response;
+      if (inform) {
+        response = await Axios.put(`http://localhost:8080/api/reportIssues/reportIssues_update/${inform._id}`, requestData);
+      } else {
+        response = await Axios.post('http://localhost:8080/api/reportIssues/reportIssues_create', requestData);
+      }
+
+      if (response.status === 201 || response.status === 200) {
+        alert(`Report ${inform ? 'updated' : 'submitted'} successfully!`);
+        navigate('/user-dashboard');
+      } else {
+        alert(`Failed to ${inform ? 'update' : 'submit'} report. Please try again.`);
+      }
+    } catch (error) {
+      console.error(`Error ${inform ? 'updating' : 'submitting'} report:`, error);
+      alert(`An error occurred while ${inform ? 'updating' : 'submitting'} the report. Please try again later.`);
+    }
   };
 
   return <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-blue-800">
-            Report Road Issue
-          </h1>
-          <button onClick={() => navigate('/user-dashboard')} className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded transition-colors">
+    <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold text-blue-600">
+          {inform ? 'Edit Report Issue' : 'Report Road Issue'}
+        </h1>
+        <button onClick={() => navigate('/user-dashboard')} className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded transition-colors">
             Back to Dashboard
           </button>
         </div>
@@ -253,7 +312,7 @@ const InformForm = () => {
             </button>
             <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md transition-colors flex items-center">
               <SendIcon size={18} className="mr-2" />
-              Submit Report
+              {inform ? 'Update Report' : 'Submit Report'}
             </button>
           </div>
         </form>
@@ -261,4 +320,4 @@ const InformForm = () => {
     </div>;
 };
 
-export default InformForm; 
+export default InformForm;

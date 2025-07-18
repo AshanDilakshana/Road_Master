@@ -1,0 +1,73 @@
+const mongoose = require('mongoose');
+
+const reportIssueSchema = new mongoose.Schema({
+    province: {
+        type: String,
+        required: true
+    },
+
+    district: {
+        type: String,
+        required: true
+    },
+
+    nearbyTown: {
+        type: String,
+        required: true
+    },
+
+    damageLevel: {
+        type: String,
+        required: true,
+    },
+
+    timeAndDate: {
+        type: Date,
+        required: true
+    },
+
+    emailAddress: {
+        type: String,
+        required: true, 
+    },
+
+    contactNumber: {
+        type: String,
+        required: true
+    },
+
+    image:{
+        type: [String],
+        required: true,  
+    },
+
+    location: {
+        lat: {
+        type: Number,
+        required: true
+        },
+        lng: {
+        type: Number,
+        required: true
+        }
+    },
+
+
+    additionalMessage:{
+        type: String,
+        required: false
+    },
+
+    userName:{
+        type: String,
+        required: true  
+    },
+    status:{
+        type: String,
+        default: 'Pending'
+    },
+    ProvinceAdmin:{
+        type: String,
+    }
+}) ;
+module.exports = mongoose.model('ReportIssue', reportIssueSchema);
