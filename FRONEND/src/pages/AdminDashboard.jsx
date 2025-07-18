@@ -79,7 +79,13 @@ const AdminDashboard = () => {
       }
     };
 
-    fetchDetails();
+    const fetchAndPoll = () => {
+      fetchDetails();
+      const interval = setInterval(fetchDetails, 15000);
+      return () => clearInterval(interval);
+    };
+    const cleanup = fetchAndPoll();
+    return cleanup;
   }, []);
 
   // Update provinceStats when filterStatus or allReports changes

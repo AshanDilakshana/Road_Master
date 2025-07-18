@@ -15,21 +15,24 @@ const UserDashboard = () => {
   const [informs, setInforms] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchInforms = async () => {
-      try {
-        const response = await Axios.get('http://localhost:8080/api/reportIssues/Getreport/', {
-          params: { email: user?.email }
-        });
-        setInforms(response.data.data);
-      } catch (error) {
-        console.error('Error fetching informs:', error);
-        alert('Failed to fetch your informs. Please try again later.');
-      }
-    };
-    if (user?.email) {
-      fetchInforms();
+  // Add a refresh function
+  const fetchInforms = async () => {
+    try {
+      const response = await Axios.get('http://localhost:8080/api/reportIssues/Getreport/', {
+        params: { email: user?.email }
+      });
+      setInforms(response.data.data);
+    } catch (error) {
+      console.error('Error fetching informs:', error);
+      alert('Failed to fetch your informs. Please try again later.');
     }
+  };
+
+  useEffect(() => {
+    if (!user?.email) return;
+    fetchInforms();
+    const interval = setInterval(fetchInforms, 15000);
+    return () => clearInterval(interval);
   }, [user?.email]);
   
 
@@ -62,6 +65,9 @@ const UserDashboard = () => {
               <button onClick={() => setIsMessageModalOpen(true)} className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm">
                 <MessageSquareIcon size={16} className="mr-2" />
                 Create Message
+              </button>
+              <button onClick={fetchInforms} className="flex items-center bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded text-sm border border-gray-300">
+                Refresh
               </button>
               <span className="text-gray-600">{user?.email}</span>
             </div>
@@ -124,7 +130,7 @@ const UserDashboard = () => {
                       {inform.additionalMessage || 'No additional message provided'}
                     </p>
                     <div className="flex justify-between text-sm text-gray-500">
-                      <span>Status: Pending</span>
+                      <span>Status: {inform.status ? inform.status.charAt(0).toUpperCase() + inform.status.slice(1) : 'Pending'}</span>
                       <span>Submitted: {new Date(inform.timeAndDate).toLocaleDateString()}</span>
                     </div>
                   </div>
