@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const userRoutes = require('./routes/usersRoutes');
 const reportIssueRoutes = require('./routes/ReportIssueRouter');
+const messageRoutes = require('./routes/MessageRouter');
 
 dotenv.config()
 
@@ -13,6 +14,7 @@ app.use(express.json({limit: '10mb' })); //request body parsing
 
 app.use('/api/users', userRoutes);
 app.use('/api/reportIssues', reportIssueRoutes);
+app.use('/api/messages', messageRoutes);
 
 
 
