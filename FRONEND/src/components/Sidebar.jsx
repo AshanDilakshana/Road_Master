@@ -37,6 +37,12 @@ const Sidebar = ({ userType }) => {
                 <span>Admins</span>
               </Link>
             </li>}
+          {userType === 'admin' && <li>
+              <Link to="/admin-users" className="flex items-center p-3 rounded-md hover:bg-blue-700 transition-colors border border-blue-700">
+                <UserIcon className="mr-3" size={20} />
+                <span>Users</span>
+              </Link>
+            </li>}
           <li>
             <Link to="/messages" className="flex items-center p-3 rounded-md hover:bg-blue-700 transition-colors border border-blue-700 relative">
               <MessageSquareIcon className="mr-3" size={20} />
