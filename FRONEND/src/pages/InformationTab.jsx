@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, FilterIcon } from 'lucide-react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const InformationTab = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [filter, setFilter] = useState('all');
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,9 +14,18 @@ const InformationTab = () => {
 
   useEffect(() => {
     const fetchReports = async () => {
+      if (!user?.email) return;
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:8080/api/reportIssues/GetAllreport');
+        let response;
+        // If main admin, fetch all reports
+        if (user.email.includes('Admin') && !user.email.includes('SubAdmin')) {
+          response = await axios.get('http://localhost:8080/api/reportIssues/GetAllreport');
+        } else {
+          response = await axios.get('http://localhost:8080/api/reportIssues/GetreportByProvinceAdmin', {
+            params: { ProvinceAdmin: user.email }
+          });
+        }
         if (response.status === 200 && Array.isArray(response.data.data)) {
           // Ensure reports have a default status if undefined
           const sanitizedReports = response.data.data.map(report => ({
@@ -33,7 +44,7 @@ const InformationTab = () => {
       }
     };
     fetchReports();
-  }, []);
+  }, [user?.email]);
 
   const filteredReports = filter === 'all' 
     ? reports 

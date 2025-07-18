@@ -63,7 +63,7 @@ const InquiryDetails = () => {
   const handleStatusChange = async (newStatus) => {
     try {
       setStatus(newStatus);
-      const response = await axios.put(`http://localhost:8081/api/reportIssues/reportIssues_update/${id}`, {
+      const response = await axios.put(`http://localhost:8080/api/reportIssues/reportIssues_update/${id}`, {
         ...report,
         status: newStatus,
       });

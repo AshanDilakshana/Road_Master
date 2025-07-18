@@ -16,6 +16,7 @@ const AdminDashboard = () => {
   const [provinceStats, setProvinceStats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [allReports, setAllReports] = useState([]);
 // const [subemail, setSubemail]= useState([]);
 
  
@@ -44,6 +45,8 @@ const AdminDashboard = () => {
         const response = await axios.get('http://localhost:8080/api/reportIssues/GetAllreport');
         
         if (response.status === 200 && Array.isArray(response.data.data)) {
+          setAllReports(response.data.data);
+          // Default province stats (all reports)
           const provinceCounts = response.data.data.reduce((acc, report) => {
             const province = report.province || 'Unknown';
             const email = report.emailAddress || 'No Email';
@@ -78,6 +81,32 @@ const AdminDashboard = () => {
 
     fetchDetails();
   }, []);
+
+  // Update provinceStats when filterStatus or allReports changes
+  useEffect(() => {
+    if (!allReports.length) return;
+    let filtered = allReports;
+    if (filterStatus !== 'all') {
+      filtered = allReports.filter(r => (r.status || '').toLowerCase() === filterStatus.toLowerCase());
+    }
+    const provinceCounts = filtered.reduce((acc, report) => {
+      const province = report.province || 'Unknown';
+      const email = report.emailAddress || 'No Email';
+      if (!acc[province]) {
+        acc[province] = { count: 0, emails: new Set() };
+      }
+      acc[province].count += 1;
+      acc[province].emails.add(email);
+      return acc;
+    }, {});
+    const formattedStats = Object.keys(provinceCounts).map((province, index) => ({
+      id: index + 1,
+      name: province,
+      count: provinceCounts[province].count,
+      email: Array.from(provinceCounts[province].emails).join(', ')
+    }));
+    setProvinceStats(formattedStats);
+  }, [filterStatus, allReports]);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -116,7 +145,7 @@ const AdminDashboard = () => {
                 <AlertCircleIcon size={32} className="text-blue-600" />
               </div>
               <h2 className="text-xl font-semibold mb-2">New Informs</h2>
-              <p className="text-gray-600">2</p>
+              <p className="text-gray-600">{allReports.length}</p>
             </Link>
             <div 
               onClick={() => navigate('/messages')} 
@@ -167,6 +196,12 @@ const AdminDashboard = () => {
                   className={`px-3 py-1 rounded-md ${filterStatus === 'done' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100'}`}
                 >
                   Done
+                </button>
+                <button 
+                  onClick={() => setFilterStatus('all')} 
+                  className={`px-3 py-1 rounded-md ${filterStatus === 'all' ? 'bg-gray-300 text-gray-800' : 'bg-gray-100'}`}
+                >
+                  All
                 </button>
               </div>
             </div>
