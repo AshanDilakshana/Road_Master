@@ -90,6 +90,21 @@ const updateReportIssue = async (req, res) => {
     }   
 };
 
+// Get reports assigned to a specific subadmin (by ProvinceAdmin email)
+const getReportIssuesByProvinceAdmin = async (req, res) => {
+    try {
+        if (!req.query.ProvinceAdmin) {
+            return res.status(400)
+                .json({ message: 'ProvinceAdmin parameter is required' });
+        }
+        const reportIssues = await ReportIssue.find({ ProvinceAdmin: req.query.ProvinceAdmin });
+        res.status(200)
+            .json({ message: 'Report issues fetched successfully', data: reportIssues });
+    } catch (error) {
+        res.status(500)
+            .json({ message: 'Error fetching report issues', error: error.message });
+    }
+};
 
-module.exports = { getAllReportIssues, getReportIssueByEmail, getReportIssueById, createReportIssue, dleteReportIssue, updateReportIssue };
+module.exports = { getAllReportIssues, getReportIssueByEmail, getReportIssueById, createReportIssue, dleteReportIssue, updateReportIssue, getReportIssuesByProvinceAdmin };
 
