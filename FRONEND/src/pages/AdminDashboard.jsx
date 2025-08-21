@@ -17,27 +17,11 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [allReports, setAllReports] = useState([]);
-// const [subemail, setSubemail]= useState([]);
+
 
  
   useEffect(() => {
     const fetchDetails = async () => {
-
- /*try{
-        const response = await axios.get('http://localhost:8080/api/users/admins')
-        const allusers = response.data;
-
-           if (Array.isArray(allusers)) {
-           const subemail = allusers.filter(user => user.email.includes('@SubAdmin'));
-           setSubemail(subemail)
-            console.log("aaaa", subemail)
-
-        }else
-         console.log("adminfetching err",error());
-
-  }catch{ console.error();}
-      */
-
 
       try {
         setLoading(true);
