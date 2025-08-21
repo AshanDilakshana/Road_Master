@@ -84,7 +84,7 @@ ROAD MASTER is a MERN stack web application designed to help citizens easily **r
 ![Sub Admin Dashboard](./FRONEND/public/Subadd%20DAsh.png)  
 
 ### 📊 Sub Admin Actions  
-![Sub Admin Actions](./FRONEND/public/subAdmin%20act.png)  
+![Sub Admin Actions](./FRONEND/public/subAdminaction.png)  
 
 
 ---
