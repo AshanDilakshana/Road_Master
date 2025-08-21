@@ -69,7 +69,7 @@ ROAD MASTER is a MERN stack web application designed to help citizens easily **r
 ## 📸 Screenshots  
 
 ### 🔑 Login Page  
-![Login Page](./FROEND/public/loggin.png)  
+![Login Page](./FRONEND/public/loggin.png)  
 
 ### 🧑‍💻 User Dashboard  
 ![User Dashboard](./public/Udash.png)  
