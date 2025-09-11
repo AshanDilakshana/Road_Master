@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npx vite",
+    "dev": "node api.js && npx vite",
     "build": "npx vite build",
     "lint": "eslint . --ext .js,.jsx",
     "preview": "npx vite preview"
