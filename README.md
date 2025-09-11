@@ -7,8 +7,8 @@ ROAD MASTER is a MERN stack web application designed to help citizens easily **r
 ## 📌 Features  
 ---if you want run it  using this credintial
 
-main admin email = Ashan@Admin.com  || pw 123
-sub admin = Ashan@SubAdmin.com || pw 123
+main admin email = Ashan@Admin.com  || pw 123 ,
+sub admin = Ashan@SubAdmin.com || pw 123,
 user = Ashan@gmail.com  || pw 123
   
 
